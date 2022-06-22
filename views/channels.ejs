@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirth Status Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container my-5">
+        <div class="h2">Channels</div>
+        <div class="text-right">
+            <a href="/logout">Logout</a>
+        </div>
+        <table class="table" style="color: gray;">
+            <thead>
+                <tr>
+                    <th scope="col">ChannelId</th>
+                    <th scope="col">ChannelName</th>
+                    <th scope="col">Received</th>
+                    <th scope="col">Sent</th>
+                    <th scope="col">Error</th>
+                    <th scope="col">Filtered</th>
+                    <th scope="col">Queued</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% channelGroups.forEach(group=> { %>
+                    <tr>
+                        <th scope="row" style="color: black;">
+                            <%= group.name %>
+                        </th>
+                    </tr>
+                    <% channels.forEach(channel=> { %>
+                        <% if(group.channel_ids_list.includes(channel.channelId)){ %>
+                            <tr>
+                                <th scope="row">
+                                    <%= channel.channelId %>
+                                </th>
+                                <td>
+                                    <%= channel.channelName %>
+                                </td>
+                                <td>
+                                    <%= channel.received %>
+                                </td>
+                                <td>
+                                    <%= channel.sent %>
+                                </td>
+                                <td>
+                                    <%= channel.error %>
+                                </td>
+                                <td>
+                                    <%= channel.filtered %>
+                                </td>
+                                <td>
+                                    <%= channel.queued %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    <% }) %>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
