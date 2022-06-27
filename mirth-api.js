@@ -70,14 +70,14 @@ async function channels(){
             })
         })
 
-        console.log("fetched channels: ")
+        // console.log("fetched channels: ")
         channel_statistics["data"]["list"]["channelStatistics"].forEach(function(channel) {
             let fetched_channel={}
             let current_channel = channel_details["data"]["list"]["channel"].find(channel_detail => channel_detail.id === channel.channelId)
             fetched_channel["channelName"] = current_channel.name
             for(let property in channel){
                 fetched_channel[property] = channel[property]
-                console.log(`${property}: ${channel[property]}`)
+                // console.log(`${property}: ${channel[property]}`)
             }
             channels.push(fetched_channel)
         })

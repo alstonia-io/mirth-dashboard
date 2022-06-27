@@ -8,6 +8,10 @@ const app = express()
 const PORT = 5000
 let token = ''
 
+//query existing stats from table
+let existing_stats = []
+//fetcehd_stats
+let fetched_stats = []
 
 //connect to db
 const db = new sqlite.Database("./test.db", sqlite.OPEN_READWRITE, err => {
@@ -15,11 +19,10 @@ const db = new sqlite.Database("./test.db", sqlite.OPEN_READWRITE, err => {
 })
 
 //create table
-sql = `CREATE TABLE IF NOT EXISTS stats(ID INTEGER PRIMARY KEY,channelId, channelName, received, sent, error, filtered)`
+sql = `CREATE TABLE IF NOT EXISTS stats(ID INTEGER PRIMARY KEY,timestamp, channelId, channelName, received, sent, error, filtered)`
 db.run(sql)
 
-//query existing stats from table
-let existing_stats = []
+
 console.log('existing stats:')
 sql = `SELECT * FROM stats`
 db.all(sql, [], (err,rows)=>{
@@ -55,31 +58,57 @@ app.get('/channels',(req,res)=>{
     else{
         mirth_api.channels()
         .then(stats=>{
+            //copy fetched stats
+            fetched_stats = [...stats.channels]
+
             //delete existing stats from table
-            console.log('deleting existing stats.')
-            db.run(`DELETE FROM stats`,[],err => {
-                if(err) return console.log(err.message)
-            })
+            // console.log('deleting existing stats.')
+            // db.run(`DELETE FROM stats`,[],err => {
+            //     if(err) return console.log(err.message)
+            // })
 
             //insert new stats into table
-            stats.channels.forEach(channel => {
-                sql = `INSERT INTO stats(channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?)`
-                db.run(sql, [channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
-                    if(err) return console.log(err.message)
-                })
-            })
+            // stats.channels.forEach(channel => {
+            //     sql = `INSERT INTO stats(channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?)`
+            //     db.run(sql, [channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
+            //         if(err) return console.log(err.message)
+            //     })
+            // })
             //newly stored stats
-            console.log('newly stored stats:')
-            db.all(`SELECT * FROM stats`,[],(err, rows)=>{
-                if(err) return console.log(err.message)
-                rows.forEach(row => {
-                    console.log(row)
-                })
-            })
-            res.render('channels',{channels : stats.channels, channelGroups : stats.channelGroups})
+            // console.log('newly stored stats:')
+            // db.all(`SELECT * FROM stats`,[],(err, rows)=>{
+            //     if(err) return console.log(err.message)
+            //     rows.forEach(row => {
+            //         console.log(row)
+            //     })
+            // })
+            res.render('channels',{channels : fetched_stats, channelGroups : stats.channelGroups})
         })
         .catch(error => res.send("Cannot fetch channels!! Service temporarily unavailable."))
     }
+})
+
+app.get('/save',(req,res)=>{
+    if(token==''){
+        res.render('index', {msg : null})
+    }
+    else{
+        console.log('writing to database')
+        try{
+            let timestamp = Date.now()
+            console.log('timestamp now: '+ timestamp)
+            fetched_stats.forEach(channel => {
+                sql = `INSERT INTO stats(timestamp,channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?,?)`
+                db.run(sql, [timestamp, channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
+                    if(err) return console.log(err.message)
+                })
+            })
+            res.redirect('/channels')
+        }
+        catch{
+            console.log('Error saving to database: ')
+        }
+    }  
 })
 
 app.get('/logout',async (req,res)=>{
