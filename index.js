@@ -1,6 +1,5 @@
 const express = require('express')
-const sqlite = require("sqlite3").verbose()
-const bodyParser = require('body-parser')
+const DB_CONNECTION = require('./connection')
 const mirth_api = require('./mirth-api')
 let sql
 
@@ -13,19 +12,15 @@ let existing_stats = []
 //fetcehd_stats
 let fetched_stats = []
 
-//connect to db
-const db = new sqlite.Database("./test.db", sqlite.OPEN_READWRITE, err => {
-    if(err) console.log(err)
-})
 
 //create table
 sql = `CREATE TABLE IF NOT EXISTS stats(ID INTEGER PRIMARY KEY,timestamp, channelId, channelName, received, sent, error, filtered)`
-db.run(sql)
+DB_CONNECTION.run(sql)
 
 
 console.log('existing stats:')
 sql = `SELECT * FROM stats`
-db.all(sql, [], (err,rows)=>{
+DB_CONNECTION.all(sql, [], (err,rows)=>{
     if(err) return console.log(err.message)
     existing_stats = [...rows]
     existing_stats.forEach(stat => {
@@ -63,20 +58,20 @@ app.get('/channels',(req,res)=>{
 
             //delete existing stats from table
             // console.log('deleting existing stats.')
-            // db.run(`DELETE FROM stats`,[],err => {
+            // DB_CONNECTION.run(`DELETE FROM stats`,[],err => {
             //     if(err) return console.log(err.message)
             // })
 
             //insert new stats into table
             // stats.channels.forEach(channel => {
             //     sql = `INSERT INTO stats(channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?)`
-            //     db.run(sql, [channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
+            //     DB_CONNECTION.run(sql, [channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
             //         if(err) return console.log(err.message)
             //     })
             // })
             //newly stored stats
             // console.log('newly stored stats:')
-            // db.all(`SELECT * FROM stats`,[],(err, rows)=>{
+            // DB_CONNECTION.all(`SELECT * FROM stats`,[],(err, rows)=>{
             //     if(err) return console.log(err.message)
             //     rows.forEach(row => {
             //         console.log(row)
@@ -99,7 +94,7 @@ app.get('/save',(req,res)=>{
             console.log('timestamp now: '+ timestamp)
             fetched_stats.forEach(channel => {
                 sql = `INSERT INTO stats(timestamp,channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?,?)`
-                db.run(sql, [timestamp, channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
+                DB_CONNECTION.run(sql, [timestamp, channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
                     if(err) return console.log(err.message)
                 })
             })
