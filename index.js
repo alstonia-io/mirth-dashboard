@@ -1,6 +1,9 @@
 const express = require('express')
 const DB_CONNECTION = require('./connection')
 const mirth_api = require('./mirth-api')
+const {CREATE_SQL, INSERT_SQL} = require('./schema')
+const {SELECT_ALL} = require('./queries')
+
 let sql
 
 const app = express()
@@ -14,12 +17,12 @@ let fetched_stats = []
 
 
 //create table
-sql = `CREATE TABLE IF NOT EXISTS stats(ID INTEGER PRIMARY KEY,timestamp, channelId, channelName, received, sent, error, filtered)`
+sql = CREATE_SQL
 DB_CONNECTION.run(sql)
 
 
 console.log('existing stats:')
-sql = `SELECT * FROM stats`
+sql = SELECT_ALL
 DB_CONNECTION.all(sql, [], (err,rows)=>{
     if(err) return console.log(err.message)
     existing_stats = [...rows]
@@ -93,7 +96,7 @@ app.get('/save',(req,res)=>{
             let timestamp = Date.now()
             console.log('timestamp now: '+ timestamp)
             fetched_stats.forEach(channel => {
-                sql = `INSERT INTO stats(timestamp,channelId, channelName, received, sent, error, filtered) VALUES (?,?,?,?,?,?,?)`
+                sql = INSERT_SQL
                 DB_CONNECTION.run(sql, [timestamp, channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
                     if(err) return console.log(err.message)
                 })
