@@ -1,0 +1,35 @@
+<%- include('header') -%>
+    <div class="container my-5">
+        <div class="text-right">
+            <a href="/logout">Logout</a>
+        </div>
+        <div><span class="h2">Timestamps</span> (Select any two to compare.)</div>
+        <form action="/timestamps" method="POST">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th scope="col">Timestamps</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let timestamps=[] %>
+                    <% stats.forEach(stat => { %>
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" name="<%=stat.timestamp %>" type="checkbox" id="flexCheckDefault">
+                                </div>
+                            </td>
+                            <td scope="row" style="color: black;">
+                                <%= new Date(stat.timestamp).toUTCString() %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+            <input type="submit" class="btn btn-primary" value="Compare" />
+        </form>
+
+    </div>
+<%- include('footer') -%>
