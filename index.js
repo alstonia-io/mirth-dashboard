@@ -1,8 +1,8 @@
 const express = require('express')
 const DB_CONNECTION = require('./connection')
 const mirth_api = require('./mirth-api')
-const {CREATE_SQL, INSERT_SQL} = require('./schema')
-const {SELECT_TIMESTAMPS} = require('./queries')
+const {CREATE_SQL, INSERT_SQL, INDEX_SQL} = require('./schema')
+const {SELECT_TIMESTAMPS, SELECT_ROWS} = require('./queries')
 
 let sql
 const app = express()
@@ -14,18 +14,6 @@ let fetched_stats = []
 //channel groups
 let channel_groups
 
-
-//create table
-sql = CREATE_SQL
-DB_CONNECTION.run(sql)
-
-//register view engine
-app.set('view engine','ejs')
-//read form data sent from html form element
-app.use(express.urlencoded({extended: true}))
-// listen to requests
-app.listen(PORT)
-
 //sqlite3 does not support async/await
 //create an async function with a promise
 async function db_all(query){
@@ -36,6 +24,29 @@ async function db_all(query){
         });
     });
 }
+
+const create_table = async () => {
+    try{
+        //create table
+        sql = CREATE_SQL
+        await db_all(CREATE_SQL)
+
+        //create index on timestamp
+        sql =  INDEX_SQL
+        db_all(INDEX_SQL)
+    }
+    catch(error){
+        console.log(error)
+    }
+}
+create_table()
+
+//register view engine
+app.set('view engine','ejs')
+//read form data sent from html form element
+app.use(express.urlencoded({extended: true}))
+// listen to requests
+app.listen(PORT)
 
 
 app.get('/',(req,res)=> {
@@ -139,11 +150,11 @@ app.post('/timestamps',async (req,res)=> {
         older_timestamp = selected_timestamps[0]
 
         //fetch recent stats
-        sql = `SELECT * FROM stats WHERE timestamp = ${recent_timestamp}`
+        sql = SELECT_ROWS + recent_timestamp
         recent_stats = await db_all(sql)
 
         //fetch older stats
-        sql = `SELECT * FROM stats WHERE timestamp = ${older_timestamp}`
+        sql = SELECT_ROWS + older_timestamp
         older_stats = await db_all(sql)
 
         //generate compared results
