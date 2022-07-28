@@ -18,8 +18,6 @@ let channel_groups
 //create an async function with a promise
 //Send an array with value(s) to replace the escaped values:
 async function db_all(query, placeholder=[]){
-    console.log('placeholder: ' + placeholder)
-    console.log('typeof Placeholder: ' + typeof(placeholder))
     return new Promise(function(resolve,reject){
         DB_CONNECTION.all(query, [...placeholder], function(err,rows){
         if(err){return reject(err);}
@@ -82,10 +80,10 @@ app.get('/save',(req,res)=>{
         res.render('index', {msg : null})
     }
     else{
-        console.log('writing to database')
+        // console.log('writing to database')
         try{
             let timestamp = Date.now()
-            console.log('timestamp now: '+ timestamp)
+            // console.log('timestamp now: '+ timestamp)
             fetched_stats.forEach(channel => {
                 sql = INSERT_SQL
                 DB_CONNECTION.run(sql, [timestamp, channel.channelId, channel.channelName, channel.received, channel.sent, channel.error, channel.filtered], err => {
@@ -155,15 +153,10 @@ app.post('/timestamps',async (req,res)=> {
         //fetch recent stats
         sql = SELECT_ROWS
         recent_stats = await db_all(sql,[parseInt(recent_timestamp)])
-        console.log('recent stats')
-        recent_stats.forEach(row => console.log(row))
 
         //fetch older stats
         sql = SELECT_ROWS
         older_stats = await db_all(sql,[parseInt(older_timestamp)])
-        console.log('older stats')
-        older_stats.forEach(row => console.log(row))
-
 
         //generate compared results
         //overwrite compared results to recent_stats
