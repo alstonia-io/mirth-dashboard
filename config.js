@@ -5,3 +5,4 @@ const DB_PATH = './test.db'
 fs.closeSync(fs.openSync(DB_PATH, 'a'))
 
 module.exports = DB_PATH
+

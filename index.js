@@ -16,9 +16,12 @@ let channel_groups
 
 //sqlite3 does not support async/await
 //create an async function with a promise
-async function db_all(query){
+//Send an array with value(s) to replace the escaped values:
+async function db_all(query, placeholder=[]){
+    console.log('placeholder: ' + placeholder)
+    console.log('typeof Placeholder: ' + typeof(placeholder))
     return new Promise(function(resolve,reject){
-        DB_CONNECTION.all(query, function(err,rows){
+        DB_CONNECTION.all(query, [...placeholder], function(err,rows){
         if(err){return reject(err);}
         resolve(rows);
         });
@@ -150,12 +153,17 @@ app.post('/timestamps',async (req,res)=> {
         older_timestamp = selected_timestamps[0]
 
         //fetch recent stats
-        sql = SELECT_ROWS + recent_timestamp
-        recent_stats = await db_all(sql)
+        sql = SELECT_ROWS
+        recent_stats = await db_all(sql,[parseInt(recent_timestamp)])
+        console.log('recent stats')
+        recent_stats.forEach(row => console.log(row))
 
         //fetch older stats
-        sql = SELECT_ROWS + older_timestamp
-        older_stats = await db_all(sql)
+        sql = SELECT_ROWS
+        older_stats = await db_all(sql,[parseInt(older_timestamp)])
+        console.log('older stats')
+        older_stats.forEach(row => console.log(row))
+
 
         //generate compared results
         //overwrite compared results to recent_stats

@@ -6,3 +6,4 @@ const db = new sqlite.Database(DB_PATH, sqlite.OPEN_READWRITE, err => {
 })
 
 module.exports = db
+
